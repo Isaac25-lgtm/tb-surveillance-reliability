@@ -52,9 +52,11 @@ def read_snapshot(path: str) -> tuple[pd.DataFrame, int]:
     if "g_whoregion" not in df.columns:
         df["g_whoregion"] = pd.NA
     cells = [c for c in MONTHS + QUARTERS if c in df.columns]
-    for c in cells + ["year", "report_frequency", "report_coverage"]:
+    for c in cells:
+        df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
+    for c in ("report_frequency", "report_coverage"):  # categorical codes stay integers
         if c in df.columns:
-            df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
+            df[c] = pd.to_numeric(df[c], errors="coerce").astype("Int64")
     placeholder = df[cells].isna().all(axis=1)
     df = df.loc[~placeholder].copy()
     df["year"] = df["year"].astype(int)
