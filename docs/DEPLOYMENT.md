@@ -1,5 +1,12 @@
 # Deployment readiness (R02 results explorer)
 
+## Verified limited deployment — 17 October 2026
+
+Live app: https://isaac-tb-surveillance-research.streamlit.app/ . Deployed by the coordinator from reviewed `main` after PR #2 merged (`7c54f66`), Python 3.11, no secrets and **no `R02_SHOW_ARCHIVE_DERIVED` setting**. Browser verification confirmed the public-CSV overview, coverage/current-file pages and all six allowlisted download controls. CI at the reviewed head passed 34 tests.
+
+The coordinator reviewed WHO's linked website data-policy terms (https://www.who.int/about/policies/publishing/data-policy/terms-and-conditions), which permit public-health display and derived charts with attribution. This deployment serves investigator-created aggregate analyses of the official public CSV, attributes WHO and the reporting countries, and states no endorsement; it does not redistribute or modify source files. This is a scope decision, **not a claim of CC BY licensing or permission for GitHub archive reuse**. Archive-derived panels remain withheld pending explicit reuse rights. The complete archive analysis remains available in the reviewed research code and was tested in the cloud.
+
+
 **Status: HOLD_DEPLOYMENT for archive-derived results.** The current-public-file-only scope (the app's
 default) is technically ready. Its public release still needs the coordinator to check the licence
 points below. Nothing has been deployed from this session.
