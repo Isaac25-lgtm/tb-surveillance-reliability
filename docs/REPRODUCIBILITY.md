@@ -17,7 +17,7 @@
 - `run_summary.json` was identical except for its `code_commit` field. The committed copy keeps
   `c2004a9`, the commit that produced the committed outputs.
 
-So committed raw inputs → committed code → committed outputs reproduced exactly. **No input was
+So cached, checksum-verified raw inputs → committed code → committed outputs reproduced exactly. Raw inputs are not committed. **No input was
 re-acquired.** The cache came from the 17 October acquisition session. Re-downloading on another date
 produces a different vintage; see "Re-acquisition" below.
 
