@@ -1,7 +1,11 @@
 name: ci
 on:
-  # PR events only: a branch push with an open PR otherwise triggers a duplicate run.
+  # Test pull requests and merged main; avoid duplicate feature-branch push runs.
   pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
