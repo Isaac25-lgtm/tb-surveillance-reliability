@@ -104,3 +104,16 @@ is not independently validated, and decision costs are unknown.
 The only independent test available is prospective. Apply the frozen rule unchanged to the next WHO
 report snapshot (the year-2026 H1 values, when published) and judge it against the following year's
 file.
+
+## Presentation and reproducibility checkpoint (17 October 2026, branch `research/presentation-repro-2026-10-17`)
+
+- **Source-to-output re-run.** One run at `e59d998`, from 16 hash-verified cached inputs. All 13 tables
+  and 5 figures were byte-identical to the committed outputs (`docs/REPRODUCIBILITY.md`). No input was
+  re-acquired.
+- **Results explorer.** Rebuilt, safe by default: the archive-derived results are hidden unless enabled
+  explicitly, and downloads are allowlisted.
+- **Tests.** 29 pass on Python 3.13.16 and on a clean 3.11.17 environment with the deployment pins.
+- **Deployment.** **HOLD_DEPLOYMENT** for archive-derived content. The GTB-TME GitHub repositories carry
+  no licence statement. The default public-CSV scope still needs the coordinator to check the licence
+  (`docs/DEPLOYMENT.md`).
+- **Scientific decision.** Unchanged: **RESERVE**.
