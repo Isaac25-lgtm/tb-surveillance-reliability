@@ -125,15 +125,38 @@ def test_committed_manifest_records_blocked_attempts():
     from conftest import ROOT
     m = pd.read_csv(ROOT / "data/manifest/source_attempts.csv")
     assert (m.groupby("host").size() <= acquire.MAX_ATTEMPTS_PER_HOST).all()
-    files = m[(m.outcome == "ok") & m.vintage_id.notna()]  # batch git rows carry no single file
+    # Actual file records (one downloaded file each): positive bytes and a 64-hex SHA-256.
+    files = m[(m.outcome == "ok") & m.vintage_id.notna()]
+    assert len(files) == 2
     assert files["sha256"].str.fullmatch(r"[0-9a-f]{64}").all() and (files["bytes"] > 0).all()
     assert set(m.loc[m.host == "web.archive.org", "outcome"]) == {"blocked"}
+    assert set(m.loc[m.outcome == "empty_response", "bytes"]) == {0}
+
     g = pd.read_csv(ROOT / "data/manifest/gtb_tme_snapshots.csv")
     assert g["sha256"].str.fullmatch(r"[0-9a-f]{64}").all() and (g["bytes"] > 0).all()
+    assert g["git_blob_sha1"].str.fullmatch(r"[0-9a-f]{40}").all()
+    assert g["commit"].str.fullmatch(r"[0-9a-f]{40}").all()
     assert g["vintage_id"].is_unique and len(g) == 17
     assert g["duplicate_of"].dropna().isin(g["vintage_id"]).all()
     # public-by is the commit date, never the nominal snapshot date in the file name
     assert (g["public_by_utc"] == g["commit_date_utc"]).all()
+
+    # Batch operations (no single file): they carry no hash/bytes of their own, and any file
+    # reference must resolve to the snapshot manifest's file records.
+    batch = m[(m.outcome == "ok") & m.vintage_id.isna()]
+    assert len(batch) == 3 and (batch["bytes"] == 0).all()
+    assert set(batch["host"]) == {"github.com (git)"}
+    refs = batch[batch["sha256"].notna()]
+    assert set(refs["sha256"]) == {"see gtb_tme_snapshots.csv"}
+    assert refs["source_url"].str.contains(f"for {len(g)} monthly").all()
+    assert set(refs["local_path"]) == {"data/raw/gtb_tme/"}
+
+    # Every archived vintage in the config is pinned to the manifest hash for its path.
+    cfg = yaml.safe_load((ROOT / "configs/experiment.yaml").read_text())
+    by_path = {f"data/raw/gtb_tme/{r.repo.split('/')[1]}/{r.path}": r.sha256 for r in g.itertuples()}
+    archived = [v for v in cfg["vintages"] if v["role"] == "archive"]
+    assert len(archived) == g["duplicate_of"].isna().sum()
+    assert all(by_path[v["path"]] == v["sha256"] for v in archived)
 
 
 def test_read_snapshot_harmonises_internal_schema(tmp_path):
