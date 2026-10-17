@@ -1,75 +1,106 @@
-# R02 evidence status — checkpoint 1 (17 October 2026, cloud session)
+# R02 evidence status (17 October 2026, cloud session)
 
 ## Decision
 
 | Dimension | Status |
 |---|---|
-| Data access | **HOLD_ACCESS** — current WHO vintage fetched; archived vintages blocked (web.archive.org denied by this environment's network policy) |
-| Method validity | Pipeline, definitions and predeclared defer rule implemented and unit-tested; cross-vintage estimand not yet estimable |
-| Scientific novelty | Unresolved; bounded search found no published quantification of threshold reversals across WHO provisional releases (not proof of absence) |
-| AI incremental value | Not applicable; advanced modelling **stopped** (insufficient vintages/maturity) |
-| Readiness | Not a manuscript. Overall: **HOLD_ACCESS** (fallback RESERVE if no archived vintages can be lawfully obtained) |
+| Data access | **Resolved for retrospective work.** 15 distinct archived official WHO vintages from the GTB-TME annual-report GitHub repositories (2021–2025), plus the current public CSV. The Internet Archive is still blocked here, but it is no longer needed. |
+| Method validity | Same-definition H1 pairs. Reporting metadata must be identical across releases, and every exclusion is audited. Uncertainty comes from a country-cluster bootstrap. Adversarial tests cover metadata changes between releases. |
+| Scientific novelty | Modest. Revisions are known. What is new is a decision-level measure, and it shows few reversals. |
+| AI incremental value | Not applicable. Advanced modelling was **stopped**: there are too few repeated maturities per year for a revision model, and no ML was fitted. |
+| Overall | **RESERVE**, candidate for a short methods note. This is retrospective and exploratory, not independent validation. |
 
-## Environment probe
+## Main result (C1, primary; retrospective)
 
-Linux cloud container, Python 3.13.16 (venv; package targets >= 3.11), 4 vCPU (computations limited to
-2 threads), 15 GiB RAM, ~31 GB free disk, root, pip install permitted, HTTPS via agent proxy.
-`extranet.who.int` reachable; `web.archive.org` blocked (tunnel closed after 39 bytes, twice).
-No access to the investigator's Windows `F:` path or earlier handoff ZIPs. Billing not readable from
-this session.
+**Design.** The early vintage is the WHO report-season snapshot for year t. The reference is the
+2026-10-17 public CSV. Each unit is one country's H1(t)/H1(t−1) ratio. It must be strict in both
+files with identical frequency and coverage metadata. The design was frozen at `8a1bd25` before
+computation (see `docs/SCIENTIFIC_PROTOCOL.md`, Addendum A).
+
+| | Value |
+|---|---|
+| Units / countries | **89 / 52** (at most 4 per country). By year: 2021 26, 2023 15, 2024 18, 2025 30 |
+| Public-by lag of the early vintage after H1 end | 105, 130, 121 and 135 days (git commit dates) |
+| Alert status changed at 5 / **10** / 15 / 20 % | 5 / **3** / 2 / 1 |
+| Share changed at 10 % (country-cluster 95 % CI) | **3.4 % (0–7.6 %)**. All 3 were false early alarms (MYS 2021, TZA 2023, IDN 2024); no early misses |
+| Share changed at 5 / 15 / 20 % | 5.6 % (1.3–10.3) / 2.2 % (0–5.4) / 1.1 % (0–3.8) |
+| Mean absolute ratio revision | 0.018 (0.011–0.025). Median absolute revision 0.001; 90th percentile 0.056 |
+| H1(t) total unchanged / revised up | 43.8 % / 34.8 % of units |
+| Balanced panel (all 4 years) | 4 countries, 16 units, 0 changed at 10 % (descriptive only) |
+
+**Predeclared defer rule** (k = 0.10, buffer 0.03; the buffer came from earlier exploratory work on
+overlapping data):
+- It defers **14 of 89** decisions and removes all 3 reversals.
+- Break-even ratio = errors avoided ÷ deferrals = 3/14 = **0.21**. The rule is worthwhile only if one
+  deferral (verification, delay) costs less than about a fifth of one misclassified alert.
+- Buffers 0.01, 0.02 and 0.05 defer 7, 11 and 25 decisions and leave 2, 0 and 0 reversals.
+
+The rule's real costs are not measured here.
+
+**Sensitivity analyses**
+- *Relaxed tier:* 125 units from 76 countries; 8 changed at 10 % (6.4 %, CI 2.4–11.8 %; 6 false
+  alarms, 2 misses).
+- *`h1_equivalent` metadata rule:* identical to the primary, because no included unit changed
+  frequency or coverage between releases.
+- *S1, the 2022 group* (git public-by 999 days after H1): 30 units, 0 changed at 10 %.
+- *S3, next-report reference:* 89 units, 3 changed.
+- *IDN 2024:* the ratio moved by +0.171 although H1 2024 itself rose only 4.7 %. That arithmetic
+  implies the 2023 base was revised down by about 12 %. Revisions to the comparison year matter.
+
+**Maturity.** Values for year t are revised between the year-t and year-(t+1) report snapshots: 102
+of 114, 68 of 92 and 62 of 92 rows differ. After that they are almost frozen: 0–4 rows differ against
+the 2026 file. In the nine 2021 internal snapshots (S4), the strict H1-2021 units comparable to the
+reference rose from 1 (nominal 29 Jun) to 8 (28 Jul), 20 (11 Aug) and 26 (8 Oct). These snapshots
+became public only on 13 Oct 2021.
+
+**Comparison with the earlier exploratory claim** (5/108 at 10 %, 64 countries, 103 stable, 17 deferred):
+- *Not reproduced exactly.* This audited strict design gives 3/89 from 52 countries, with 86 stable
+  and 14 deferred. The relaxed tier gives 8/125 from 76 countries.
+- The source repositories and the 105–135-day lags match. The earlier definitions are unknown, so
+  the gap is not explained.
+- Both analyses agree on the order of magnitude: about 3–6 % of 10 % alerts change.
 
 ## Sources (exact)
 
-| # | Host | URL | Result | Bytes | SHA-256 |
-|---|---|---|---|---|---|
-| 1 | extranet.who.int | `generateCSV.asp?ds=c_newinc_prov` | HTTP 200, empty (wrong dataset code guessed) | 0 | — |
-| 2 | extranet.who.int | `generateCSV.asp?ds=provisional_notifications` | **OK**, server filename `TB_provisional_notifications_2026-10-17.csv`, 647 rows x 24 cols, 142 countries, 2020–2026 | 56,347 | `a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b` |
-| 3 | extranet.who.int | `generateCSV.asp?ds=dictionary` | **OK** (defines codes 70/71, 34/35) | 108,122 | `2b0aecd442bffabf2f313d2eaa478ffaea48d09fe78670a136a1956c042011bf` |
-| 1 | web.archive.org | CDX listing (wildcard) | **Blocked** (connection reset) | 0 | — |
-| 2 | web.archive.org | CDX listing (exact URL) | **Blocked** (same) | 0 | — |
+**Attempt log** (`data/manifest/source_attempts.csv`):
+- *extranet.who.int (3 attempts):* one empty response (wrong dataset code), then the current
+  provisional CSV (56,347 B, `a4be40a0…`, 647 rows) and the data dictionary.
+- *web.archive.org (2 attempts):* both blocked by the environment's network policy.
+- *github.com git (3 batch operations):*
+  1. a metadata-only clone of `GTB-TME/gtbreport2024`;
+  2. `ls-remote` plus metadata-only clones of 2021, 2022, 2023 and 2025;
+  3. a fetch of 17 blobs.
 
-WHO host cap of 3 attempts reached; third Wayback attempt deliberately not spent. One web search found
-no public GitHub/versioned archive of the provisional CSV.
+**Archived snapshots** (`data/manifest/gtb_tme_snapshots.csv`):
+- 17 files carry git blob ids, bytes, SHA-256, nominal snapshot dates and commit dates.
+- Two `.rda` files duplicate CSV content, leaving 15 distinct vintages.
+- The 2024 snapshot `.rda` is 26,984 B, as the coordinator reported.
+- The `gtbreport2022` repository has one commit, dated 2025-03-25. An earlier public release of the
+  2022 snapshot cannot be proven here.
 
-## Results actually computed (vintage `who_prov_2026-10-17`, public-by 2026-10-17)
+## Within-vintage audit of the 2026-10-17 file (unchanged from checkpoint 1)
 
-Coverage and maturity (`results/tables/coverage_by_year_who_prov_2026-10-17.csv`):
-
-| Year t | Country rows | Complete H1 | Strict pairs (t vs t-1) | Relaxed pairs | H1 maturity (days) |
-|---|---|---|---|---|---|
-| 2020 | 104 | 104 | – | – | 2300 |
-| 2021 | 128 | 117 | 42 | 60 | 1935 |
-| 2022 | 117 | 108 | 53 | 75 | 1570 |
-| 2023 | 99 | 83 | 43 | 55 | 1205 |
-| 2024 | 101 | 80 | 30 | 46 | 839 |
-| 2025 | 91 | 67 | 32 | 44 | 474 |
-| 2026 | 7 | **0** | 0 | 0 | 109 |
-
-* 200 strict pairs from 76 countries (max 5 pairs per country); 280 relaxed pairs; balanced
-  2021–2025 strict panel = **10 countries** (50 pairs).
-* Main exclusion reasons over 2021–2025: coverage-code change 85, incomplete H1 77, relaxed-only
-  (some-units coverage, zero cell or base < 50) 80, frequency change 21.
-* 2026: only January reported, by 7 countries, 109 days after H1 end — **no country has a complete
-  H1 2026 in this vintage.** No negative cells; 233 zero cells concentrated in small-count countries.
-* Within-vintage share of strict pairs with H1 decline >= 10%: **31/200 = 15.5%** (country-cluster
-  bootstrap 95% CI 11.2–20.2%); balanced panel 10/50 = 20.0% (12.0–28.0%, 10 countries,
-  descriptive only). Counts at 5/10/15/20%: 51/31/19/6 (strict), 80/53/36/20 (relaxed).
-  These describe year-on-year change in one file, **not** revision reliability.
-
-## Prior exploratory claims
-
-| Claim | Status |
-|---|---|
-| 5/108 reversals at 10% across 64 countries; 103 stable | **NOT REPRODUCED** — requires earlier vintages; blocked |
-| 0.03 buffer avoids all 5 while deferring 17 | **NOT REPRODUCED**; buffer fixed as predeclared primary rule, not re-tuned |
-| Archive commits 105–135 days after H1 end | Not verifiable here. Consistent concern: at 109 days, the current file has no complete H1 2026 |
+- **Complete H1 coverage:** 117 countries (2021), 108, 83, 80, 67 (2025) and **0 for 2026** (only January
+  is reported, by 7 countries).
+- **Pairs:** 200 strict pairs from 76 countries. Of these, 31/200 (15.5 %, CI 11.2–20.2 %) show an
+  H1 decline of 10 % or more. That is year-on-year change, not revision reliability.
 
 ## Commands and tests
 
-See `docs/REPRODUCIBILITY.md`. `pytest -q`: 12 passed (11 pipeline/unit + 1 dashboard AppTest).
+- **Tests:** `pytest -q` → 20 passed.
+- **Pipeline:** `scripts/run_pipeline.py` at `c2004a9` took 3 min 33 s on 1 thread.
+- **Reproducibility:** the reference-vintage tables are byte-identical to the checkpoint-1 outputs.
+- **CI** runs on pull requests only.
+
+See `docs/REPRODUCIBILITY.md`.
 
 ## Next decision
 
-Obtain >= 1 lawful earlier vintage (investigator-supplied archived files with capture evidence, or
-re-run with `web.archive.org` allowed) or wait for the next WHO release to run the prospective test
-in `docs/SCIENTIFIC_PROTOCOL.md`. Without that, move to RESERVE.
+A methods note is defensible. It would cover how often public WHO provisional H1 alerts reverse
+after same-definition matching, the maturity lag, and the cost threshold above which deferral does
+not pay. A full original article is not supported: there are few reversals, CIs reach zero, the rule
+is not independently validated, and decision costs are unknown.
+
+The only independent test available is prospective. Apply the frozen rule unchanged to the next WHO
+report snapshot (the year-2026 H1 values, when published) and judge it against the following year's
+file.

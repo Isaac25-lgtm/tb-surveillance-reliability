@@ -1,5 +1,6 @@
 # Manuscript status
 
-No manuscript. Status HOLD_ACCESS: the cross-vintage estimand has not been estimated (one verified
-vintage). Do not draft results sections until `docs/STATUS.md` records at least one computed
-cross-vintage comparison under the predeclared protocol.
+No manuscript. Status RESERVE (methods-note candidate). Any draft must state that the cross-vintage
+analysis is retrospective on archived WHO files that earlier exploratory work had already inspected, report
+3/89 (strict) and 8/125 (relaxed) reversals at the 10% threshold with country-cluster CIs, and present the
+defer rule only through break-even cost ratios.

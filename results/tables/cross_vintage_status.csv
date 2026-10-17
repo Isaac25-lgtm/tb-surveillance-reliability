@@ -1,2 +1,2 @@
-status,n_verified_vintages,reason
-NOT_COMPUTABLE,1,only one verified vintage; archived releases blocked or absent
+status,n_verified_vintages,n_comparisons
+COMPUTED,16,54

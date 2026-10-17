@@ -31,7 +31,7 @@ def figure(name: str) -> None:
 st.set_page_config(page_title="R02 TB vintage explorer", layout="wide")
 
 summary = json.loads((ROOT / "results" / "run_summary.json").read_text())
-m = re.search(r"Overall: \*\*([A-Z_]+)\*\*", (ROOT / "docs" / "STATUS.md").read_text())
+m = re.search(r"Overall\W+\*\*([A-Z_]+)\*\*", (ROOT / "docs" / "STATUS.md").read_text())
 decision = m.group(1) if m else "see docs/STATUS.md"
 reference_ids = sorted(p.stem.removeprefix("coverage_by_year_") for p in TABLES.glob("coverage_by_year_*.csv"))
 inventory = table("vintage_inventory.csv")
