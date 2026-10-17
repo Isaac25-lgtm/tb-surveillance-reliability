@@ -1,0 +1,76 @@
+{
+  "code_commit": "105899610d0585ed1e20f4b464faf09dd70c8997",
+  "config": {
+    "project": "R02 TB release-vintage surveillance reliability",
+    "seed": 20261017,
+    "vintages": [
+      {
+        "id": "who_prov_2026-10-17",
+        "path": "data/raw/who_provisional/2026-10-17/provisional_notifications.csv",
+        "sha256": "a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b",
+        "public_by": "2026-10-17"
+      }
+    ],
+    "estimand": "H1 (Jan-Jun) year-on-year ratio of provisional notifications, same definition in both years",
+    "thresholds": [
+      0.05,
+      0.1,
+      0.15,
+      0.2
+    ],
+    "primary_threshold": 0.1,
+    "min_base_h1": 50,
+    "defer_buffer_primary": 0.03,
+    "defer_buffer_sensitivity": [
+      0.01,
+      0.02,
+      0.03,
+      0.05
+    ],
+    "cost_ratio_grid": [
+      0.05,
+      0.1,
+      0.2,
+      0.3,
+      0.5,
+      1.0
+    ],
+    "balanced_years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "bootstrap": {
+      "cluster": "iso3",
+      "n_boot": 2000,
+      "alpha": 0.05
+    }
+  },
+  "vintages": [
+    {
+      "id": "who_prov_2026-10-17",
+      "sha256": "a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b",
+      "rows": 647,
+      "countries": 142,
+      "years": [
+        2020,
+        2026
+      ],
+      "strict_pairs": 200,
+      "relaxed_pairs": 280,
+      "strict_countries": 76,
+      "balanced_countries": 10,
+      "complete_h1_latest_year": 0
+    }
+  ],
+  "blocked": [],
+  "cross_vintage": [
+    {
+      "status": "NOT_COMPUTABLE",
+      "n_verified_vintages": 1,
+      "reason": "only one verified vintage; archived releases blocked or absent"
+    }
+  ]
+}

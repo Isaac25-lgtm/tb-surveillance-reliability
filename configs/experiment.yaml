@@ -1,0 +1,18 @@
+# R02 checkpoint 1 configuration. Values marked PREDECLARED were fixed in
+# docs/SCIENTIFIC_PROTOCOL.md before any second vintage was obtained.
+project: R02 TB release-vintage surveillance reliability
+seed: 20261017
+vintages:                      # only files registered as outcome=ok in data/manifest/source_attempts.csv
+  - id: who_prov_2026-10-17
+    path: data/raw/who_provisional/2026-10-17/provisional_notifications.csv
+    sha256: a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b
+    public_by: "2026-10-17"
+estimand: H1 (Jan-Jun) year-on-year ratio of provisional notifications, same definition in both years
+thresholds: [0.05, 0.10, 0.15, 0.20]   # PREDECLARED
+primary_threshold: 0.10               # PREDECLARED
+min_base_h1: 50                       # PREDECLARED strict-tier floor on H1 of year t-1
+defer_buffer_primary: 0.03            # PREDECLARED (value inherited from prior exploratory work; NOT re-tuned)
+defer_buffer_sensitivity: [0.01, 0.02, 0.03, 0.05]
+cost_ratio_grid: [0.05, 0.1, 0.2, 0.3, 0.5, 1.0]   # cost of one deferral / cost of one misclassification
+balanced_years: [2021, 2022, 2023, 2024, 2025]
+bootstrap: {cluster: iso3, n_boot: 2000, alpha: 0.05}
