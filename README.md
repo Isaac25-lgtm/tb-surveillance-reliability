@@ -136,7 +136,7 @@ comparisons, the defer-rule trade-offs, and allowlisted downloads.
 - **Full scope:** set `R02_SHOW_ARCHIVE_DERIVED=1` to add the archive-derived results, for local
   research use only until licensing is confirmed.
 
-It is **not deployed**. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+**[Open the live public-CSV dashboard](https://isaac-tb-surveillance-research.streamlit.app/)** — deployed from reviewed `main` on 17 October 2026, Python 3.11. The overview, current-file page and aggregate download controls were browser-verified. Archive-derived revision panels remain withheld; the complete research explorer is implemented and tested in the cloud. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Reproduce
 
