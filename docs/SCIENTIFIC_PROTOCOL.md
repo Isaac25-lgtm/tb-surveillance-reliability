@@ -73,3 +73,54 @@ exploratory replication of the earlier 5/108 finding and must be labelled as suc
   comparable sample is dominated by a handful of countries; or definition/frequency/coverage
   changes make most pairs incomparable.
 * HOLD_ACCESS while fewer than two verified vintages exist.
+
+---
+
+## Addendum A — retrospective design on official WHO GTB-TME archives (frozen before computing)
+
+**Frozen:** 17 October 2026, in the commit that adds this addendum. At that commit, the 14 archived
+vintages had been downloaded, hashed and **schema-inspected only**: column names, codes, row counts,
+and the number of complete H1 rows for the latest year of each snapshot. No cross-vintage ratio,
+reversal or defer-rule result had been computed.
+
+**Status: retrospective and exploratory, not independent.** The earlier 5/108 analysis most likely
+used overlapping files: its "105–135 days" matches the commit lags of the 2021/2023/2024/2025
+report repos. Its 0.03 buffer was chosen after inspecting them. So this is a reproduction and
+sensitivity analysis, not a validation.
+
+**Sources.** WHO Global TB Programme report repositories `GTB-TME/gtbreport2021`–`gtbreport2025`
+(`data/manifest/gtb_tme_snapshots.csv`). Internal snapshot schema = public schema with `.` in place of
+`_`, plus `gaps.na` (undocumented; not used) and `remarks` (free text; **never loaded into outputs**).
+Rows whose 16 count cells are all missing are placeholders and are dropped (counted).
+`g_whoregion` is taken from the 2026-10-17 public file by iso3.
+
+**Dates.** `nominal_snapshot_date` = date in the WHO file name (internal extraction, not a public
+date). `public_by` = git committer date of the first commit containing the blob. That date is asserted
+by the committer's client, not by GitHub's servers, and it proves nothing about earlier circulation.
+Maturity at public-by = public_by − 30 June of year t.
+
+**Primary comparison (C1, report-season vs current).** Early vintage for year t = the snapshot in the
+year-t report repo: 2021 `gtb2021_2021-10-08`, 2023 `gtb2023_2023-07-21`, 2024 `gtb2024_2024-07-29`,
+2025 `gtb2025_2025-07-30`. Reference = `who_prov_2026-10-17`. Units: (country, t) H1 pairs, t vs t−1,
+**strict in both files**, only for year t of each early vintage. Primary groups are those whose public-by
+lag is ≤ 200 days (2021: 105 d, 2023: 130 d, 2024: 121 d, 2025: 135 d). Unbalanced = all units;
+balanced = countries with a unit in all four groups.
+
+**Sensitivity.**
+- (S1) Add the 2022 group (`gtb2022_2022-08-29`; git public-by 2025-03-25, 999 days, so not an early
+  public signal).
+- (S2) Relaxed tier.
+- (S3) Next-report reference: early vintage of year t vs the year t+1 report snapshot. Here a later file
+  public about one year later is the reference.
+- (S4) H1 2021 maturity curve over the nine 2021 internal snapshots (nominal 2021-06-29 to 2021-10-08,
+  all public-by 2021-10-13) vs the 2026 reference.
+- (S5) Continuous revisions r_ref − r_early and H1_ref/H1_early − 1 over all units.
+
+**Metrics.** These are unchanged from the main protocol:
+- reversals at 5/10/15/20% (10% primary), split into false early alarms and early misses;
+- the defer rule at k = 0.10, buffer 0.03, with the buffer and cost grids;
+- a country-cluster bootstrap (2,000 resamples, seed 20261017) for the share of units reversed;
+- pairs per country.
+
+**Comparison with the earlier claim.** Compare the counts with 108/64/5/103. Report differences; do not
+tune definitions to match.
