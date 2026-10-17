@@ -1,0 +1,7 @@
+# Streamlit deployment of dashboard/app.py (Python 3.11). Only what the app imports:
+# the app reads committed aggregate CSV/PNG files and reuses tbvintage.evaluate.classify.
+# Tested in a clean Python 3.11 venv on 2026-10-17 (docs/DEPLOYMENT.md).
+streamlit==1.66.0
+altair==6.3.0
+pandas==3.0.6
+numpy==2.4.6
