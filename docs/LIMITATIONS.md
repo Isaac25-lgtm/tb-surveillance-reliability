@@ -15,7 +15,7 @@
 * **Notifications are not incidence.** No causal attribution (COVID-19, funding) is made.
 * **Shrinking, selective coverage.** Countries with complete H1 fell from 117 (2021) to 67 (2025); report-season
   snapshots had complete H1 for only 34–67 countries. Reporting countries are not a random sample.
-* **Maturity.** Early vintages became public 105–135 days after H1 ended; the current file had no complete H1
+* **Maturity.** Early vintages have git committer dates (client-asserted, not proven publication times) 105–135 days after H1 ended; the current file had no complete H1
   2026 at 109 days. "Immediate early warning" is not supported.
 * **Comparison-year revisions** (e.g. IDN 2024: base year revised down ~12%) can move ratios more than the
   current-year revision.
