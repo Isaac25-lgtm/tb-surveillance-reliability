@@ -124,3 +124,8 @@ balanced = countries with a unit in all four groups.
 
 **Comparison with the earlier claim.** Compare the counts with 108/64/5/103. Report differences; do not
 tune definitions to match.
+
+*Erratum to Addendum A (added after freezing, no design change):* the addendum says "14 archived
+vintages". The correct numbers are 17 downloaded blobs, which make 15 distinct archived vintages
+(two `.rda` files duplicate CSV content). The test suite caught the miscount. No comparison
+definition changed.

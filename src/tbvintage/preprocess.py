@@ -23,8 +23,46 @@ REQUIRED_COLUMNS = [
 ]
 
 
+# Columns never loaded from WHO internal snapshots: free-text remarks can name individuals,
+# and gaps.na is undocumented.
+DROP_COLUMNS = ("remarks", "gaps_na")
+
+
+def read_snapshot(path: str) -> tuple[pd.DataFrame, int]:
+    """Read a public CSV or a WHO GTB-TME internal snapshot (.rda or dotted-name CSV).
+
+    Harmonises ``report.frequency``/``m.01`` names to the public ``_`` schema, drops free-text
+    and undocumented columns, and drops placeholder rows whose 16 count cells are all missing.
+    Returns the frame and the number of placeholder rows dropped.
+    """
+    if str(path).endswith(".rda"):
+        import rdata  # optional dependency, only needed for archived snapshots
+
+        objs = rdata.read_rda(str(path))
+        if len(objs) != 1:
+            raise ValueError(f"{path}: expected one R object, found {list(objs)}")
+        df = pd.DataFrame(next(iter(objs.values())))
+    else:
+        try:
+            df = pd.read_csv(path, dtype={"iso_numeric": str, "iso2": str})
+        except UnicodeDecodeError:
+            df = pd.read_csv(path, dtype={"iso_numeric": str, "iso2": str}, encoding="latin-1")
+    df = df.rename(columns=lambda c: c.replace(".", "_"))
+    df = df.drop(columns=[c for c in DROP_COLUMNS if c in df.columns])
+    if "g_whoregion" not in df.columns:
+        df["g_whoregion"] = pd.NA
+    cells = [c for c in MONTHS + QUARTERS if c in df.columns]
+    for c in cells + ["year", "report_frequency", "report_coverage"]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
+    placeholder = df[cells].isna().all(axis=1)
+    df = df.loc[~placeholder].copy()
+    df["year"] = df["year"].astype(int)
+    return df.reset_index(drop=True), int(placeholder.sum())
+
+
 def load_vintage(path: str, vintage_id: str) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype={"iso_numeric": str, "iso2": str}, keep_default_na=True)
+    df, n_placeholder = read_snapshot(path)
     missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
     if missing:
         raise ValueError(f"vintage {vintage_id}: missing columns {missing}")
@@ -32,6 +70,7 @@ def load_vintage(path: str, vintage_id: str) -> pd.DataFrame:
         raise ValueError(f"vintage {vintage_id}: duplicate iso3-year keys")
     df = df.copy()
     df["vintage_id"] = vintage_id
+    df.attrs["placeholder_rows_dropped"] = n_placeholder
     return df
 
 

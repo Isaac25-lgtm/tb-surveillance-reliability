@@ -67,3 +67,73 @@ def ratio_figure(pairs: pd.DataFrame, vintage: str, path: str, thresholds=(0.05,
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     fig.savefig(path)
     plt.close(fig)
+
+
+def revision_scatter(units: pd.DataFrame, k: float, path: str):
+    """Early-vintage vs reference H1 ratio for each (country, year) unit, alert quadrants marked."""
+    fig, ax = plt.subplots(figsize=(6.4, 6), dpi=150)
+    _style(ax)
+    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    cut = 1 - k
+    changed = units[f"changed_{int(round(k * 100))}"].astype(bool)
+    x, y = units["ratio_a"].clip(0.4, 1.8), units["ratio_b"].clip(0.4, 1.8)
+    ax.scatter(x[~changed], y[~changed], s=14, color=BLUE, alpha=0.55, linewidths=0,
+               label=f"Same alert status (n={int((~changed).sum())})")
+    ax.scatter(x[changed], y[changed], s=34, color=ORANGE, edgecolor=INK, linewidths=0.6,
+               label=f"Alert status changed (n={int(changed.sum())})")
+    ax.plot([0.4, 1.8], [0.4, 1.8], color=MUTED, lw=0.8)
+    ax.axvline(cut, color=ORANGE, ls="--", lw=1)
+    ax.axhline(cut, color=ORANGE, ls="--", lw=1)
+    ax.set_xlim(0.4, 1.8)
+    ax.set_ylim(0.4, 1.8)
+    ax.set_xlabel("H1 ratio in report-season snapshot (early)", color=INK)
+    ax.set_ylabel("H1 ratio in 2026-10-17 public file (reference)", color=INK)
+    ax.set_title(f"C1: same (country, year) H1 ratio across vintages; dashed = -{int(k * 100)}% alert",
+                 loc="left", fontsize=9, color=INK)
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    fig.text(0.01, 0.01, "Strict same-definition units, years 2021/2023/2024/2025; clipped 0.4-1.8. "
+             "Reference is a later file, not truth.", fontsize=6.5, color=MUTED)
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    fig.savefig(path)
+    plt.close(fig)
+
+
+def maturity_curve(s4: pd.DataFrame, k: float, path: str):
+    """H1 2021 units available and changed vs the reference, by nominal 2021 snapshot date."""
+    tag = int(round(k * 100))
+    d = s4.assign(nominal=pd.to_datetime(s4["early"].str[-10:])).sort_values("nominal")
+    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=150)
+    _style(ax)
+    ax.plot(d["nominal"], d["n_units"], color=BLUE, marker="o", lw=2, label="Strict units comparable to reference")
+    ax.plot(d["nominal"], d[f"changed_{tag}"], color=ORANGE, marker="o", lw=2,
+            label=f"... of which -{tag}% alert status differs from reference")
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("Country H1 2020->2021 pairs", color=INK)
+    ax.set_xlabel("Nominal WHO snapshot date in 2021 (all made public by commit 2021-10-13)", color=INK)
+    ax.set_title("S4: H1 2021 becomes comparable only as snapshots mature", loc="left", fontsize=10, color=INK)
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+
+
+def defer_tradeoff(d: pd.DataFrame, path: str):
+    """Deferrals vs remaining reversals for each buffer at the primary threshold (C1)."""
+    g = d.drop_duplicates("buffer").sort_values("buffer")
+    fig, ax = plt.subplots(figsize=(7, 4.2), dpi=150)
+    _style(ax)
+    ax.plot(g["buffer"], g["n_deferred"], color=BLUE, marker="o", lw=2, label="Decisions deferred")
+    ax.plot(g["buffer"], g["errors_after_defer_rule"], color=ORANGE, marker="o", lw=2,
+            label="Reversals among acted decisions")
+    ax.axhline(g["errors_if_trust_early"].iloc[0], color=MUTED, ls=":", lw=1,
+               label="Reversals if early vintage trusted")
+    ax.set_xlabel("Defer buffer around the -10% cut-off (0.03 predeclared)", color=INK)
+    ax.set_ylabel("Count of country-year units", color=INK)
+    ax.set_ylim(bottom=0)
+    ax.set_title(f"C1 defer rule trade-off (n={int(g['n_decisions'].iloc[0])} units); retrospective, not validation",
+                 loc="left", fontsize=9, color=INK)
+    ax.legend(frameon=False, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)

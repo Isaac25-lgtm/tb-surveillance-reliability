@@ -1,18 +1,264 @@
-# R02 checkpoint 1 configuration. Values marked PREDECLARED were fixed in
-# docs/SCIENTIFIC_PROTOCOL.md before any second vintage was obtained.
+# R02 configuration. PREDECLARED values: docs/SCIENTIFIC_PROTOCOL.md (main rules frozen at 64f3808,
+# Addendum A comparisons frozen at 8a1bd25 before any cross-vintage computation).
 project: R02 TB release-vintage surveillance reliability
 seed: 20261017
-vintages:                      # only files registered as outcome=ok in data/manifest/source_attempts.csv
-  - id: who_prov_2026-10-17
-    path: data/raw/who_provisional/2026-10-17/provisional_notifications.csv
-    sha256: a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b
-    public_by: "2026-10-17"
+vintages:
+- id: who_prov_2026-10-17
+  path: data/raw/who_provisional/2026-10-17/provisional_notifications.csv
+  sha256: a4be40a0d977a47e7684aa8630d29e4c52afb35e6735a8b312032d4fb8cd684b
+  public_by: '2026-10-17'
+  nominal_date: '2026-10-17'
+  role: reference
+  source: WHO extranet public CSV
+- id: gtb2021_2021-06-29
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-06-29.csv
+  sha256: 3aba95a85c624844ffbb9b87eb8482d1aa4e5fac9572a660f54e49a0308f5c4c
+  public_by: '2021-10-13'
+  nominal_date: '2021-06-29'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-07-01
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-07-01.csv
+  sha256: 6d46018e670220382f6e38ab48ccb244e974c43f9a1a1b5b8cc3b348298bc2fb
+  public_by: '2021-10-13'
+  nominal_date: '2021-07-01'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-07-02
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-07-02.csv
+  sha256: ac29ea90edfc647f8534aad4ecb4c357966b346a9a3078e07c953ff0922c70ae
+  public_by: '2021-10-13'
+  nominal_date: '2021-07-02'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-07-16
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-07-16.csv
+  sha256: 05c7e759a4dcea6b87a4114d85787dc3487f20ce6cc6922b7401ce9a2e3f630c
+  public_by: '2021-10-13'
+  nominal_date: '2021-07-16'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-07-28
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-07-28.csv
+  sha256: 1a286a2b27dba8cbfc801563b6dfe5786cf9b2ccb208fc396bbfa3ecc43c5c1a
+  public_by: '2021-10-13'
+  nominal_date: '2021-07-28'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-08-11
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-08-11.csv
+  sha256: be70c44e25891e6ce222c572cb70717a848dc3b28f1091b711214b1fc172e090
+  public_by: '2021-10-13'
+  nominal_date: '2021-08-11'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-08-16
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-08-16.csv
+  sha256: 60fd11232306e765f26aba794f5b648e2cfd2bf616133b03d3680578cbf3094e
+  public_by: '2021-10-13'
+  nominal_date: '2021-08-16'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-09-13
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-09-13.csv
+  sha256: d8f27f791ca0c741cf6f04845cc7c01d6c234e3c8d9c9adc3860b6754be626b6
+  public_by: '2021-10-13'
+  nominal_date: '2021-09-13'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2021_2021-10-08
+  path: data/raw/gtb_tme/gtbreport2021/csv/monthly_2021-10-08.csv
+  sha256: 98839820c2c17a3e21c0bc7c8bb02f44a64d861b2b127ced9ba39e3fa60e1fd1
+  public_by: '2021-10-13'
+  nominal_date: '2021-10-08'
+  role: archive
+  source: GTB-TME/gtbreport2021@021b571
+- id: gtb2022_2022-08-29
+  path: data/raw/gtb_tme/gtbreport2022/csv/monthly_2022-08-29.csv
+  sha256: e60775e7fa2431c9caac3b0b9d19a66bac3b83053deb6c7c1eedd01d6ed98a55
+  public_by: '2025-03-25'
+  nominal_date: '2022-08-29'
+  role: archive
+  source: GTB-TME/gtbreport2022@958a181
+- id: gtb2023_prov_2023-04-24
+  path: data/raw/gtb_tme/gtbreport2023/dynamic/Data/Disruptions/TB_provisional_notifications_2023-04-24.csv
+  sha256: 51bd58e9535bcf26eb819c903a2bde1cfcd8794cac37039f97a3890f6e8eabc0
+  public_by: '2023-11-07'
+  nominal_date: '2023-04-24'
+  role: archive
+  source: GTB-TME/gtbreport2023@6e1c997
+- id: gtb2023_2023-07-21
+  path: data/raw/gtb_tme/gtbreport2023/data/gtb/snapshot_2023-07-21/monthly.rda
+  sha256: 770ae185bdf2caf62bc0648ad77caa9d85b117a81401bda5ab84334d46f3633b
+  public_by: '2023-11-07'
+  nominal_date: '2023-07-21'
+  role: archive
+  source: GTB-TME/gtbreport2023@6e1c997
+- id: gtb2024_prov_2023-05-10
+  path: data/raw/gtb_tme/gtbreport2024/dynamic/Data/Disruptions/TB_provisional_notifications_2023-05-10.csv
+  sha256: 086d96a3841a90d7e6c8c5515c4db2a32a441e8a4c98824ce1f43df36e6bcf75
+  public_by: '2024-11-28'
+  nominal_date: '2023-05-10'
+  role: archive
+  source: GTB-TME/gtbreport2024@afbe537
+- id: gtb2024_2024-07-29
+  path: data/raw/gtb_tme/gtbreport2024/data/gtb/snapshot_2024-07-29/monthly.rda
+  sha256: 749868f501a8545770dc55ad36f8a8fbd53e19ca604852b5199b9a9f116c3b96
+  public_by: '2024-10-29'
+  nominal_date: '2024-07-29'
+  role: archive
+  source: GTB-TME/gtbreport2024@ab2d02f
+- id: gtb2025_2025-07-30
+  path: data/raw/gtb_tme/gtbreport2025/data/gtb/snapshot_2025-07-30/monthly.rda
+  sha256: 5c89cb45f8a3d519b95ef7f77d7f89826be3a33ab0f48a84ef358c9c1a1945f3
+  public_by: '2025-11-12'
+  nominal_date: '2025-07-30'
+  role: archive
+  source: GTB-TME/gtbreport2025@666088c
 estimand: H1 (Jan-Jun) year-on-year ratio of provisional notifications, same definition in both years
-thresholds: [0.05, 0.10, 0.15, 0.20]   # PREDECLARED
-primary_threshold: 0.10               # PREDECLARED
-min_base_h1: 50                       # PREDECLARED strict-tier floor on H1 of year t-1
-defer_buffer_primary: 0.03            # PREDECLARED (value inherited from prior exploratory work; NOT re-tuned)
-defer_buffer_sensitivity: [0.01, 0.02, 0.03, 0.05]
-cost_ratio_grid: [0.05, 0.1, 0.2, 0.3, 0.5, 1.0]   # cost of one deferral / cost of one misclassification
-balanced_years: [2021, 2022, 2023, 2024, 2025]
-bootstrap: {cluster: iso3, n_boot: 2000, alpha: 0.05}
+thresholds:
+- 0.05
+- 0.1
+- 0.15
+- 0.2
+primary_threshold: 0.1
+min_base_h1: 50
+defer_buffer_primary: 0.03
+defer_buffer_sensitivity:
+- 0.01
+- 0.02
+- 0.03
+- 0.05
+cost_ratio_grid:
+- 0.05
+- 0.1
+- 0.2
+- 0.3
+- 0.5
+- 1.0
+balanced_years:
+- 2021
+- 2022
+- 2023
+- 2024
+- 2025
+bootstrap:
+  cluster: iso3
+  n_boot: 2000
+  alpha: 0.05
+comparisons:
+- id: C1_2021
+  analysis: C1
+  early: gtb2021_2021-10-08
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: C1_2023
+  analysis: C1
+  early: gtb2023_2023-07-21
+  late: who_prov_2026-10-17
+  years:
+  - 2023
+- id: C1_2024
+  analysis: C1
+  early: gtb2024_2024-07-29
+  late: who_prov_2026-10-17
+  years:
+  - 2024
+- id: C1_2025
+  analysis: C1
+  early: gtb2025_2025-07-30
+  late: who_prov_2026-10-17
+  years:
+  - 2025
+- id: S1_2022
+  analysis: S1
+  early: gtb2022_2022-08-29
+  late: who_prov_2026-10-17
+  years:
+  - 2022
+- id: S3_2021
+  analysis: S3
+  early: gtb2021_2021-10-08
+  late: gtb2022_2022-08-29
+  years:
+  - 2021
+- id: S3_2022
+  analysis: S3
+  early: gtb2022_2022-08-29
+  late: gtb2023_2023-07-21
+  years:
+  - 2022
+- id: S3_2023
+  analysis: S3
+  early: gtb2023_2023-07-21
+  late: gtb2024_2024-07-29
+  years:
+  - 2023
+- id: S3_2024
+  analysis: S3
+  early: gtb2024_2024-07-29
+  late: gtb2025_2025-07-30
+  years:
+  - 2024
+- id: S4_2021-06-29
+  analysis: S4
+  early: gtb2021_2021-06-29
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-07-01
+  analysis: S4
+  early: gtb2021_2021-07-01
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-07-02
+  analysis: S4
+  early: gtb2021_2021-07-02
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-07-16
+  analysis: S4
+  early: gtb2021_2021-07-16
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-07-28
+  analysis: S4
+  early: gtb2021_2021-07-28
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-08-11
+  analysis: S4
+  early: gtb2021_2021-08-11
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-08-16
+  analysis: S4
+  early: gtb2021_2021-08-16
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-09-13
+  analysis: S4
+  early: gtb2021_2021-09-13
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+- id: S4_2021-10-08
+  analysis: S4
+  early: gtb2021_2021-10-08
+  late: who_prov_2026-10-17
+  years:
+  - 2021
+primary_analysis: C1
+prior_claim:
+  comparisons: 108
+  countries: 64
+  changed_10: 5
+  stable_10: 103
+  deferred_buffer_003: 17

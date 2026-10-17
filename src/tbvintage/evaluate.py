@@ -80,16 +80,69 @@ def threshold_summary(pairs: pd.DataFrame, tier: str, thresholds=THRESHOLDS) -> 
     return pd.DataFrame(rows)
 
 
+# Reporting definition of a year pair: frequency and coverage code in year t and year t-1.
+METADATA = ["report_frequency", "report_frequency_prev", "report_coverage", "report_coverage_prev"]
+METADATA_RULES = ("identical", "h1_equivalent")
+
+
+def audit_cross_vintage(pairs_a: pd.DataFrame, pairs_b: pd.DataFrame, tier: str = "strict",
+                        years=None) -> pd.DataFrame:
+    """Every (iso3, year) unit in either vintage for the selected years, with a join status.
+
+    Status values
+      included                  tier-eligible in both, identical reporting metadata in both
+      metadata_changed:<fields> tier-eligible in both, but frequency/coverage differ between vintages
+      absent_in_late            eligible early, no pair row in the later vintage
+      not_<tier>_in_late:<why>  eligible early, pair row exists later but fails the tier
+      not_<tier>_in_early:<why> eligible later only (no early decision existed)
+    Missing coverage codes compare equal to each other.
+    """
+    if years is not None:
+        pairs_a = pairs_a[pairs_a["year"].isin(list(years))]
+        pairs_b = pairs_b[pairs_b["year"].isin(list(years))]
+    keep = ["iso3", "year", "ratio", "h1_total", "h1_total_prev", tier, "exclusion_reason", *METADATA]
+    j = pairs_a[keep].merge(pairs_b[keep], on=["iso3", "year"], how="outer", suffixes=("_a", "_b"),
+                            indicator=True)
+    elig_a = j[f"{tier}_a"].fillna(False).astype(bool)
+    elig_b = j[f"{tier}_b"].fillna(False).astype(bool)
+    changed = []
+    for m in METADATA:
+        diff = j[f"{m}_a"].fillna(-1) != j[f"{m}_b"].fillna(-1)
+        changed.append(diff.map({True: m, False: ""}))
+    changed_fields = pd.concat(changed, axis=1).apply(lambda r: "+".join(x for x in r if x), axis=1)
+    status = pd.Series("", index=j.index, dtype=object)
+    both = elig_a & elig_b
+    status[both & changed_fields.eq("")] = "included"
+    status[both & changed_fields.ne("")] = "metadata_changed:" + changed_fields[both & changed_fields.ne("")]
+    a_only = elig_a & ~elig_b
+    status[a_only & j["_merge"].eq("left_only")] = "absent_in_late"
+    late_fail = a_only & j["_merge"].eq("both")
+    status[late_fail] = f"not_{tier}_in_late:" + j.loc[late_fail, "exclusion_reason_b"].astype(str)
+    b_only = elig_b & ~elig_a
+    status[b_only] = f"not_{tier}_in_early:" + j.loc[b_only, "exclusion_reason_a"].fillna("absent").astype(str)
+    j["status"] = status
+    j["metadata_changed_fields"] = changed_fields
+    return j[status.ne("")].drop(columns=["_merge"]).reset_index(drop=True)
+
+
 def compare_vintages(pairs_a: pd.DataFrame, pairs_b: pd.DataFrame, tier: str = "strict",
-                     thresholds=THRESHOLDS) -> pd.DataFrame:
+                     thresholds=THRESHOLDS, years=None, metadata: str = "identical") -> pd.DataFrame:
     """Join the same (iso3, year) pair across an earlier vintage A and later vintage B.
 
-    The pair must meet ``tier`` in both vintages (same-definition both times).
+    The pair must meet ``tier`` in both vintages. With ``metadata="identical"`` (primary) the
+    reporting frequency and coverage code of years t and t-1 must also be identical in both
+    vintages. ``metadata="h1_equivalent"`` (labelled sensitivity) additionally admits units whose
+    metadata differ between vintages, treating each vintage's H1 total as equivalent.
+    ``years`` optionally restricts to year t values.
     """
-    keep = ["iso3", "year", "ratio", "h1_total", "h1_total_prev", tier]
-    a = pairs_a.loc[pairs_a[tier], keep]
-    b = pairs_b.loc[pairs_b[tier], keep]
-    j = a.merge(b, on=["iso3", "year"], suffixes=("_a", "_b"))
+    if metadata not in METADATA_RULES:
+        raise ValueError(f"metadata must be one of {METADATA_RULES}")
+    aud = audit_cross_vintage(pairs_a, pairs_b, tier, years)
+    ok = aud["status"].eq("included")
+    if metadata == "h1_equivalent":
+        ok |= aud["status"].str.startswith("metadata_changed:")
+    j = aud[ok].drop(columns=[f"{tier}_a", f"{tier}_b", "exclusion_reason_a", "exclusion_reason_b"])
+    j = j.reset_index(drop=True)
     j["ratio_revision"] = j["ratio_b"] - j["ratio_a"]
     j["h1_revision_rel"] = j["h1_total_b"] / j["h1_total_a"] - 1
     for k in thresholds:
@@ -99,7 +152,7 @@ def compare_vintages(pairs_a: pd.DataFrame, pairs_b: pd.DataFrame, tier: str = "
         j[f"changed_{tag}"] = ca != cb
         j[f"false_early_alarm_{tag}"] = ca & ~cb
         j[f"early_miss_{tag}"] = ~ca & cb
-    return j.drop(columns=[f"{tier}_a", f"{tier}_b"])
+    return j
 
 
 def defer_rule(cmp: pd.DataFrame, k: float, buffer: float, cost_defer: float = 1.0,
