@@ -27,6 +27,9 @@ from tbvintage.evaluate import classify  # noqa: E402  same alert rule as the pi
 TABLES, FIGS = ROOT / "results" / "tables", ROOT / "results" / "figures"
 BLUE, ORANGE, MUTED = "#2f6db5", "#c4621d", "#59636e"  # validated pair (light and dark surfaces)
 THRESHOLDS = (5, 10, 15, 20)
+REFERENCE_LABEL = {"C1": "2026-10-17 public file", "S1": "2026-10-17 public file",
+                   "S3": "next year's report snapshot"}
+GIT_DATE_NOTE = ("git committer date: asserted by the committer's client, not a proven publication time")
 FULL = show_archive_derived()
 
 st.set_page_config(page_title="R02 TB vintage reliability", layout="wide")
@@ -40,7 +43,7 @@ def table(name: str) -> pd.DataFrame:
 def figure(name: str, caption: str) -> None:
     p = FIGS / name
     if p.exists():
-        st.image(str(p), caption=caption, use_container_width=True)
+        st.image(str(p), caption=caption, width="stretch")
 
 
 summary = json.loads((ROOT / "results" / "run_summary.json").read_text())
@@ -85,6 +88,8 @@ if page == "Overview":
     )
     if FULL:
         row, b = primary()
+        g = table("defer_rule_grid.csv")
+        pr = g[g.primary_rule & (g.analysis == "C1")].iloc[0]  # count columns do not vary by cost ratio
         ci = b[(b.analysis == "C1") & (b.tier == "strict") & (b.metadata_rule == "identical")
                & (b["sample"] == "unbalanced") & (b.statistic == "share_alert_changed_10")].iloc[0]
         c = st.columns(4)
@@ -95,7 +100,8 @@ if page == "Overview":
         st.markdown(
             f"**{ci.estimate:.1%}** of 10% alerts changed (country-cluster 95% CI {ci.ci_low:.1%}–{ci.ci_high:.1%}); "
             f"all {int(row.false_early_alarm_10)} were false early alarms, {int(row.early_miss_10)} early misses. "
-            "The predeclared buffer of 0.03 would have deferred 14 decisions to avoid these 3 — "
+            f"The predeclared buffer of {pr.buffer:g} would have deferred {int(pr.n_deferred)} of "
+            f"{int(pr.n_decisions)} decisions and avoided {int(pr.errors_avoided)} reversals — "
             "**retrospectively only**."
         )
         st.caption("Early = WHO report-season snapshot for year t; reference = 2026-10-17 public CSV, a later "
@@ -111,7 +117,7 @@ if page == "Overview":
                         legend=alt.Legend(title=None, labelExpr="datum.label == 'h1_complete' ? "
                                           "'Complete H1' : 'Any provisional row'")),
         tooltip=["year", "series", "countries"])
-    st.altair_chart(ch, use_container_width=True)
+    st.altair_chart(ch, width="stretch")
     st.caption("No country had a complete H1 2026 in the 2026-10-17 file (109 days after H1 ended).")
 
 elif page == "Sources and vintages":
@@ -128,7 +134,7 @@ elif page == "Sources and vintages":
     cols = ["vintage_id", "source", "nominal_date", "public_by", "h1_latest_maturity_days_nominal",
             "h1_latest_maturity_days_public_by", "rows", "countries", "latest_year", "complete_h1_latest_year",
             "sha256"]
-    st.dataframe(inv[cols], hide_index=True, use_container_width=True)
+    st.dataframe(inv[cols], hide_index=True, width="stretch")
     if FULL:
         d = inv.assign(nominal=pd.to_datetime(inv.nominal_date, errors="coerce"),
                        public=pd.to_datetime(inv.public_by)).dropna(subset=["nominal"])
@@ -140,18 +146,18 @@ elif page == "Sources and vintages":
             y=alt.Y("vintage_id:N", sort=alt.SortField("nominal")), x="date:T",
             color=alt.Color("kind:N", scale=alt.Scale(range=[BLUE, ORANGE]), title="Date type"),
             shape="kind:N", tooltip=["vintage_id", "kind", "date:T"])
-        st.altair_chart(lag + pts, use_container_width=True)
+        st.altair_chart(lag + pts, width="stretch")
         st.caption("Gap between WHO's nominal snapshot date and the git committer date (public-by).")
     st.subheader("Every acquisition attempt (including failures and blocked hosts)")
     st.dataframe(pd.read_csv(ROOT / "data" / "manifest" / "source_attempts.csv"), hide_index=True,
-                 use_container_width=True)
+                 width="stretch")
 
 elif page == "Coverage and exclusions":
     st.title("Coverage and exclusions")
     st.subheader("Current public file: year pairs by inclusion status")
     flow = table(f"pair_flow_{REF}.csv")
-    st.dataframe(flow, hide_index=True, use_container_width=True)
-    st.dataframe(table(f"coverage_by_year_{REF}.csv"), hide_index=True, use_container_width=True)
+    st.dataframe(flow, hide_index=True, width="stretch")
+    st.dataframe(table(f"coverage_by_year_{REF}.csv"), hide_index=True, width="stretch")
     if FULL:
         st.subheader("Cross-vintage joins: compatible country-years and why others were excluded")
         ex = table("cross_vintage_exclusions.csv")
@@ -160,7 +166,7 @@ elif page == "Coverage and exclusions":
         tier = c2.selectbox("Tier", ["strict", "relaxed"])
         sub = ex[(ex.analysis == an) & (ex.tier == tier)]
         st.dataframe(sub.pivot_table(index="status", columns="comparison", values="n_units", aggfunc="sum",
-                                     fill_value=0), use_container_width=True)
+                                     fill_value=0), width="stretch")
         st.caption("`included` = same-definition in both files with identical frequency/coverage metadata. "
                    "`not_*_in_early:incomplete_h1` are country-years not yet complete when the early snapshot "
                    "was taken (no early decision existed).")
@@ -170,14 +176,14 @@ elif page == "Coverage and exclusions":
             x=alt.X("complete_h1_latest_year:Q", title="Countries with complete H1 (latest year in file)"),
             y=alt.Y("vintage_id:N", sort=alt.SortField("nominal_date"), title=None),
             tooltip=["vintage_id", "latest_year", "rows_latest_year", "complete_h1_latest_year",
-                     "placeholder_rows_dropped"]), use_container_width=True)
+                     "placeholder_rows_dropped"]), width="stretch")
 
 elif page == "Within current file":
     st.title("Within the current public file (year-on-year change, not revision)")
     thr = table(f"threshold_counts_{REF}.csv")
     tier = st.radio("Sample", ["strict", "relaxed", "balanced"], horizontal=True)
-    st.dataframe(thr[thr.tier == tier], hide_index=True, use_container_width=True)
-    st.dataframe(table(f"within_vintage_bootstrap_{REF}.csv"), hide_index=True, use_container_width=True)
+    st.dataframe(thr[thr.tier == tier], hide_index=True, width="stretch")
+    st.dataframe(table(f"within_vintage_bootstrap_{REF}.csv"), hide_index=True, width="stretch")
     figure(f"h1_ratios_{REF}.png", "Strict same-definition H1 ratios within the 2026-10-17 file")
 
 elif page == "Alert reversals":
@@ -214,14 +220,21 @@ elif page == "Alert reversals":
                                                  alt.Tooltip("estimate:Q", format=".1%"),
                                                  alt.Tooltip("ci_low:Q", format=".1%"),
                                                  alt.Tooltip("ci_high:Q", format=".1%")]),
-                    use_container_width=True)
+                    width="stretch")
     st.caption("Point = estimate; bar = country-cluster bootstrap 95% CI (2,000 resamples).")
     with st.expander("CI table"):
-        st.dataframe(bb.drop(columns=["variant"]), hide_index=True, use_container_width=True)
+        st.dataframe(bb.drop(columns=["variant"]), hide_index=True, width="stretch")
 
     st.subheader("Country-years: early vs reference ratio")
     u = table("cross_vintage_units.csv")
     u = u[(u.analysis == an) & (u.tier == tier) & (u.metadata_rule == meta)].copy()
+    if sample == "balanced":  # pipeline rule: country present in every comparison group of this analysis
+        per_country = u.groupby("iso3")["comparison"].nunique()
+        u = u[u.iso3.isin(per_country[per_country == u.comparison.nunique()].index)]
+    late = table("cross_vintage_comparisons.csv").drop_duplicates("comparison").set_index("comparison")["late"]
+    u["reference_file"] = u.comparison.map(late)
+    st.caption(f"Chart sample ({sample}): {len(u)} country-years from {u.iso3.nunique()} countries, "
+               "before the year/country filters below.")
     years = st.multiselect("Year t", sorted(u.year.unique()), default=sorted(u.year.unique()))
     country = st.selectbox("Country (ISO3)", ["All"] + sorted(u.iso3.unique()))
     u = u[u.year.isin(years)]
@@ -233,22 +246,24 @@ elif page == "Alert reversals":
     cut = 1 - k / 100
     pts = alt.Chart(u).mark_point(filled=True, size=60, stroke="white", strokeWidth=1).encode(
         x=alt.X("ratio_a:Q", title="H1 ratio, early vintage", scale=alt.Scale(zero=False)),
-        y=alt.Y("ratio_b:Q", title="H1 ratio, reference (2026-10-17)", scale=alt.Scale(zero=False)),
+        y=alt.Y("ratio_b:Q", title=f"H1 ratio, reference ({REFERENCE_LABEL[an]})", scale=alt.Scale(zero=False)),
         color=alt.Color("status:N", scale=alt.Scale(domain=["stable", "changed"], range=[BLUE, ORANGE])),
         shape=alt.Shape("status:N", scale=alt.Scale(domain=["stable", "changed"], range=["circle", "diamond"])),
-        tooltip=["iso3", "year", "comparison", alt.Tooltip("ratio_a:Q", format=".3f"),
-                 alt.Tooltip("ratio_b:Q", format=".3f"), alt.Tooltip("ratio_revision:Q", format="+.3f"),
+        tooltip=["iso3", "year", "comparison", "reference_file",
+                 alt.Tooltip("ratio_a:Q", format=".3f", title="early ratio"),
+                 alt.Tooltip("ratio_b:Q", format=".3f", title="reference ratio"), alt.Tooltip("ratio_revision:Q", format="+.3f"),
                  "status"])
     rules = alt.Chart(pd.DataFrame({"v": [cut]})).mark_rule(color=ORANGE, strokeDash=[4, 4])
-    st.altair_chart(pts + rules.encode(x="v:Q") + rules.encode(y="v:Q"), use_container_width=True)
+    st.altair_chart(pts + rules.encode(x="v:Q") + rules.encode(y="v:Q"), width="stretch")
     st.caption(f"{len(u)} country-years shown; dashed lines = -{k}% alert cut-off. Ratios are national "
                "aggregate notification totals, not individual patient data.")
     c1, c2 = st.columns(2)
-    show = ["iso3", "year", "ratio_a", "ratio_b", "ratio_revision", "early_alert", "reference_alert"]
+    show = ["iso3", "year", "reference_file", "ratio_a", "ratio_b", "ratio_revision", "early_alert",
+            "reference_alert"]
     c1.markdown(f"**Changed ({int((u.status == 'changed').sum())})**")
-    c1.dataframe(u[u.status == "changed"][show], hide_index=True, use_container_width=True)
+    c1.dataframe(u[u.status == "changed"][show], hide_index=True, width="stretch")
     c2.markdown(f"**Stable ({int((u.status == 'stable').sum())})**")
-    c2.dataframe(u[u.status == "stable"][show], hide_index=True, use_container_width=True)
+    c2.dataframe(u[u.status == "stable"][show], hide_index=True, width="stretch")
 
 elif page == "Revision distributions":
     st.title("How much do H1 ratios and totals move?")
@@ -262,8 +277,8 @@ elif page == "Revision distributions":
                        ("h1_revision_rel", "Relative revision of H1(t) total")):
         st.altair_chart(alt.Chart(u).mark_bar(color=BLUE, cornerRadiusEnd=2).encode(
             x=alt.X(f"{col}:Q", bin=alt.Bin(maxbins=40), title=title),
-            y=alt.Y("count():Q", title="Country-years"), tooltip=["count():Q"]), use_container_width=True)
-    st.dataframe(u[["ratio_revision", "h1_revision_rel"]].describe().T, use_container_width=True)
+            y=alt.Y("count():Q", title="Country-years"), tooltip=["count():Q"]), width="stretch")
+    st.dataframe(u[["ratio_revision", "h1_revision_rel"]].describe().T, width="stretch")
     st.caption("Many H1 totals are unchanged; a ratio can move because the comparison year (t-1) was revised.")
 
 elif page == "Maturity":
@@ -271,10 +286,12 @@ elif page == "Maturity":
     s4 = table("cross_vintage_comparisons.csv")
     s4 = s4[(s4.analysis == "S4") & (s4.tier == "strict") & (s4.metadata_rule == "identical")]
     st.dataframe(s4[["comparison", "n_units", "n_countries", "changed_10", "ratio_revision_abs_median"]],
-                 hide_index=True, use_container_width=True)
+                 hide_index=True, width="stretch")
     figure("s4_h1_2021_maturity.png", "H1 2021 country-years comparable to the reference, by 2021 snapshot")
-    st.caption("All nine 2021 snapshots became public (git commit) on 2021-10-13, 105 days after H1 ended. "
-               "Report-season snapshots for 2023/2024/2025 became public 130/121/135 days after H1.")
+    st.caption("All nine 2021 snapshots first appear in a commit with " + GIT_DATE_NOTE + " 2021-10-13, "
+               "105 days after H1 ended; the report-season snapshots for 2023/2024/2025 have git committer "
+               "dates 130/121/135 days after H1. The figure's axis label (\"made public by commit\") refers to "
+               "this same git committer date.")
 
 elif page == "Defer rule":
     st.title("Predeclared defer / verify rule")
@@ -290,12 +307,12 @@ elif page == "Defer rule":
     gk = g[(g.threshold.round(2) == k / 100) & (g.cost_ratio == cr)].sort_values("buffer")
     st.dataframe(gk[["buffer", "n_decisions", "n_deferred", "errors_if_trust_early", "errors_after_defer_rule",
                      "errors_avoided", "loss_trust_early", "loss_defer_rule", "break_even_defer_to_error_cost",
-                     "primary_rule"]], hide_index=True, use_container_width=True)
+                     "primary_rule"]], hide_index=True, width="stretch")
     long = gk.melt("buffer", ["n_deferred", "errors_after_defer_rule"], "series", "count")
     st.altair_chart(alt.Chart(long).mark_line(point=True, strokeWidth=2).encode(
         x=alt.X("buffer:Q", title="Buffer"), y=alt.Y("count:Q", title="Country-years"),
         color=alt.Color("series:N", scale=alt.Scale(range=[ORANGE, BLUE]), title=None),
-        tooltip=["buffer", "series", "count"]), use_container_width=True)
+        tooltip=["buffer", "series", "count"]), width="stretch")
     ga = g[g.threshold.round(2) == k / 100].melt(["buffer", "cost_ratio"], ["loss_trust_early", "loss_defer_rule"],
                                                  "policy", "loss")
     st.altair_chart(alt.Chart(ga).mark_line(point=True, strokeWidth=2).encode(

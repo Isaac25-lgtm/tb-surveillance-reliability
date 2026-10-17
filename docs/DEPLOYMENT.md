@@ -59,7 +59,7 @@ The app shows no WHO emblem.
   - numpy 2.5.x has no Python 3.11 wheel, so the pin is 2.4.6. The analysis environment used 2.5.4 on
     Python 3.13.
   - In a clean **Python 3.11.17** venv with exactly these pins (plus pytest 9.1.1), the dashboard and
-    integrity tests passed: 10 passed. With the package installed, the full suite passed: 29 passed.
+    integrity tests passed. With the package installed, the full suite passed: 34 passed (after the presentation-consistency fix; 29 before it).
 - **CI:** runs on Python 3.11 and installs `requirements.txt` plus the package.
 - **Streamlit config:** `.streamlit/config.toml` runs headless, collects no usage stats, hides error
   details from viewers, sets a light theme and disables the file watcher.

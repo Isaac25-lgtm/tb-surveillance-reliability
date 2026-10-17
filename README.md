@@ -148,7 +148,7 @@ tables and 5 figures came out byte-identical. Commands and evidence:
 python3 -m venv .venv && .venv/bin/pip install -e ".[test,dashboard,archives]"
 OMP_NUM_THREADS=1 .venv/bin/python scripts/run_pipeline.py    # needs raw files matching configs/experiment.yaml
 .venv/bin/python scripts/make_results_manifest.py --check
-.venv/bin/python -m pytest -q                                # 29 tests; no network, no model training
+.venv/bin/python -m pytest -q                                # 34 tests; no network, no model training
 ```
 
 ## Limits and next step

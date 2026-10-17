@@ -33,7 +33,7 @@ manifest's own SHA-256 is `243db8df…cb0cfa01`.
   and email addresses.
 
 **Tests run on this branch:**
-- `pytest -q` → **29 passed**, on Python 3.13.16 and on a clean Python 3.11.17 venv with the deployment
+- `pytest -q` → **34 passed**, on Python 3.13.16 and on a clean Python 3.11.17 venv with the deployment
   pins.
 - The one warning is a matplotlib `tight_layout` notice in the synthetic end-to-end test: its single-year
   fixture places a threshold label outside the axes. The real figures render unclipped. Figure code was
