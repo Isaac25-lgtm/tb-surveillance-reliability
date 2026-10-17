@@ -1,0 +1,7 @@
+year,coverage_change,frequency_change,included_strict,incomplete_h1,relaxed_only,zero_base,strict,relaxed,pairs_with_both_years_present
+2021,29,3,42,4,18,0,42,60,96
+2022,19,6,53,12,22,0,53,75,112
+2023,14,7,43,13,12,1,43,55,90
+2024,13,3,30,23,16,0,30,46,85
+2025,10,2,32,25,12,0,32,44,81
+2026,0,0,0,7,0,0,0,0,7

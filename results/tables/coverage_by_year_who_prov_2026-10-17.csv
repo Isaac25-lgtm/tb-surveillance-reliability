@@ -1,0 +1,8 @@
+year,country_years,monthly,quarterly,cov_all_units,cov_some_units,cov_missing,any_zero_cell,any_negative_cell,h1_complete,h1_complete_with_zero,h1_maturity_days_at_vintage
+2020,104,77,27,63,8,33,9,0,104,8,2300
+2021,128,85,43,98,18,12,12,0,117,7,1935
+2022,117,75,42,91,14,12,10,0,108,8,1570
+2023,99,65,34,72,11,16,6,0,83,5,1205
+2024,101,63,38,73,14,14,9,0,80,3,839
+2025,91,63,28,66,14,11,3,0,67,3,474
+2026,7,7,0,7,0,0,0,0,0,0,109
