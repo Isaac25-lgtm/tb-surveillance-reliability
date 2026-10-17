@@ -301,3 +301,22 @@ def test_pipeline_end_to_end_two_synthetic_vintages(tmp_path, synthetic_frame):
     rules = pd.read_csv(tmp_path / "out/tables/defer_rule_grid.csv")
     assert rules["primary_rule"].sum() == 6  # one per cost ratio
     assert (tmp_path / "out/figures/c1_revision_scatter.png").stat().st_size > 1000
+
+
+def test_cluster_bootstrap_matches_concat_reference():
+    """Fast positional resampling must reproduce the whole-country concat resampler exactly."""
+    rng = np.random.default_rng(3)
+    df = pd.DataFrame({"iso3": rng.choice(list("ABCDEFG"), 60), "x": rng.normal(size=60)})
+    df = df.sample(frac=1, random_state=1)  # non-contiguous, unsorted index
+
+    def reference(d, stat, n_boot, seed):
+        r = np.random.default_rng(seed)
+        groups = {c: g for c, g in d.groupby("iso3")}
+        ids = np.array(list(groups))
+        draws = [stat(pd.concat([groups[c] for c in r.choice(ids, size=len(ids), replace=True)],
+                                ignore_index=True)) for _ in range(n_boot)]
+        return tuple(np.nanquantile(draws, [0.025, 0.975]))
+
+    stat = lambda d: d["x"].mean() + 0.1 * d["x"].iloc[0]  # noqa: E731  order-sensitive on purpose
+    _, lo, hi = evaluate.cluster_bootstrap(df, stat, n_boot=200, seed=9)
+    assert (lo, hi) == pytest.approx(reference(df, stat, 200, 9), abs=1e-12)

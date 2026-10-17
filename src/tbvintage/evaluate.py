@@ -186,7 +186,8 @@ def cluster_bootstrap(df: pd.DataFrame, stat, cluster: str = "iso3", n_boot: int
                       seed: int = 20261017, alpha: float = 0.05) -> tuple[float, float, float]:
     """Percentile CI from resampling whole countries with replacement."""
     rng = np.random.default_rng(seed)
-    groups = {c: g for c, g in df.groupby(cluster)}
+    df = df.reset_index(drop=True)
+    groups = {c: g.index.to_numpy() for c, g in df.groupby(cluster)}  # row positions per country
     ids = np.array(list(groups))
     est = float(stat(df))
     if len(ids) < 2:
@@ -194,6 +195,7 @@ def cluster_bootstrap(df: pd.DataFrame, stat, cluster: str = "iso3", n_boot: int
     draws = []
     for _ in range(n_boot):
         pick = rng.choice(ids, size=len(ids), replace=True)
-        draws.append(stat(pd.concat([groups[c] for c in pick], ignore_index=True)))
+        rows = np.concatenate([groups[c] for c in pick])
+        draws.append(stat(df.iloc[rows].reset_index(drop=True)))
     lo, hi = np.nanquantile(draws, [alpha / 2, 1 - alpha / 2])
     return est, float(lo), float(hi)
